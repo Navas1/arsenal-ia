@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Arsenal de IA — Navas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #06090F;
+  --surface: #0D1520;
+  --card:    #111C2B;
+  --border:  #1A2840;
+  --teal:    #00C5A8;
+  --electric:#00B4FF;
+  --amber:   #F5A623;
+  --coral:   #FF6B6B;
+  --mint:    #00E676;
+  --purple:  #A78BFA;
+  --white:   #F0F6FF;
+  --muted:   #7A90B0;
+  --dim:     #3A5070;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── BG ANIMADO ── */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,197,168,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,197,168,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.bg-orb{
+  position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;
+}
+.orb1{width:300px;height:300px;background:rgba(0,180,255,.06);top:-80px;right:-80px;animation:float 8s ease-in-out infinite}
+.orb2{width:200px;height:200px;background:rgba(0,197,168,.05);bottom:100px;left:-60px;animation:float 10s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+
+/* ── WRAPPER ── */
+.wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 16px 80px}
+
+/* ── HEADER ── */
+header{
+  padding:32px 0 20px;
+  text-align:center;
+}
+.badge{
+  display:inline-block;
+  background:linear-gradient(135deg,rgba(0,197,168,.15),rgba(0,180,255,.1));
+  border:1px solid rgba(0,197,168,.3);
+  border-radius:20px;padding:4px 14px;
+  font-size:10px;letter-spacing:2px;color:var(--teal);
+  text-transform:uppercase;font-weight:500;margin-bottom:14px;
+}
+h1{
+  font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+  line-height:1.1;margin-bottom:8px;
+}
+h1 span{color:var(--teal)}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.5;max-width:320px;margin:0 auto}
+
+/* ── FILTROS ── */
+.filters{
+  display:flex;gap:8px;overflow-x:auto;padding:20px 0 4px;
+  scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px;
+}
+.filters::-webkit-scrollbar{display:none}
+.filter-btn{
+  flex-shrink:0;padding:7px 14px;border-radius:20px;
+  border:1px solid var(--border);background:var(--card);
+  color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;
+  transition:all .2s ease;white-space:nowrap;
+  font-family:'DM Sans',sans-serif;
+}
+.filter-btn.active,
+.filter-btn:active{
+  background:var(--teal);border-color:var(--teal);color:#000;font-weight:700;
+}
+
+/* ── SEÇÃO ── */
+.section{margin-top:28px}
+.section-title{
+  font-family:'Syne',sans-serif;font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--dim);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── CARD PRINCIPAL ── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:12px;
+  transition:transform .2s ease, border-color .2s ease;
+  cursor:pointer;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  opacity:0;transition:opacity .3s;
+  background:linear-gradient(135deg,rgba(0,197,168,.08),transparent);
+}
+.card:active{transform:scale(.98)}
+.card:active::before{opacity:1}
+.card-top{display:flex;align-items:flex-start;gap:12px}
+.card-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;position:relative;
+}
+.card-icon .status-dot{
+  position:absolute;bottom:2px;right:2px;width:8px;height:8px;
+  border-radius:50%;border:1.5px solid var(--card);
+}
+.dot-green{background:#00E676}
+.dot-amber{background:#F5A623}
+.dot-red{background:#FF6B6B}
+.card-info{flex:1;min-width:0}
+.card-name{
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:700;
+  margin-bottom:2px;
+}
+.card-tagline{font-size:11px;color:var(--muted);line-height:1.3;margin-bottom:8px}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{
+  padding:3px 8px;border-radius:8px;font-size:10px;
+  font-weight:600;letter-spacing:.5px;
+}
+
+/* ── ÁREA DE DETALHES ── */
+.card-detail{
+  max-height:0;overflow:hidden;transition:max-height .35s ease, padding .35s ease;
+}
+.card-detail.open{max-height:300px;padding-top:12px}
+.detail-divider{height:1px;background:var(--border);margin-bottom:12px}
+.detail-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.detail-icon{font-size:12px;margin-top:1px;flex-shrink:0}
+.detail-text{font-size:12px;color:var(--muted);line-height:1.5}
+.detail-text strong{color:var(--white);font-weight:500}
+.detail-link{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:10px;padding:8px 14px;border-radius:10px;
+  background:rgba(0,197,168,.12);border:1px solid rgba(0,197,168,.25);
+  color:var(--teal);font-size:12px;font-weight:500;
+  text-decoration:none;width:100%;justify-content:center;
+}
+
+/* ── CARD IA PRINCIPAL (grande) ── */
+.card-hero{
+  background:linear-gradient(135deg,var(--card) 0%,#0A1A28 100%);
+  border:1px solid var(--border);border-radius:20px;
+  padding:20px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.card-hero::after{
+  content:'';position:absolute;top:-20px;right:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,197,168,.12),transparent 70%);
+}
+.hero-top{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.hero-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  flex-shrink:0;
+}
+.hero-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+.hero-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.hero-desc{font-size:13px;color:rgba(240,246,255,.75);line-height:1.6;margin-bottom:14px}
+.hero-uses{display:flex;flex-direction:column;gap:7px}
+.use-item{
+  display:flex;align-items:flex-start;gap:8px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:10px;padding:9px 11px;
+}
+.use-dot{
+  width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0;
+}
+.use-text{font-size:12px;color:var(--muted);line-height:1.4}
+.use-text strong{color:var(--white);font-weight:500}
+
+/* ── DESTAQUE NAVAS ── */
+.highlight-box{
+  background:linear-gradient(135deg,rgba(0,197,168,.08),rgba(0,180,255,.05));
+  border:1px solid rgba(0,197,168,.2);border-radius:14px;
+  padding:14px 16px;margin:10px 0;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.highlight-box .hi{font-size:16px;flex-shrink:0}
+.highlight-box p{font-size:12px;color:rgba(240,246,255,.7);line-height:1.5}
+.highlight-box p strong{color:var(--teal)}
+
+/* ── STACK VISUAL ── */
+.stack-row{
+  display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;
+}
+.stack-item{
+  flex:1;min-width:calc(50% - 4px);
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:12px;
+}
+.stack-project{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--dim);margin-bottom:6px}
+.stack-tools{font-size:11px;color:var(--muted);line-height:1.6}
+.stack-tools span{
+  display:inline-block;margin:2px 3px 0 0;
+  padding:2px 7px;border-radius:6px;font-size:10px;
+}
+
+/* ── AVISO ── */
+.warning-card{
+  background:rgba(255,107,107,.06);border:1px solid rgba(255,107,107,.2);
+  border-radius:14px;padding:14px 16px;margin-bottom:12px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.warning-card p{font-size:12px;color:rgba(240,246,255,.65);line-height:1.5}
+.warning-card p strong{color:var(--coral)}
+
+/* ── NAV BOTTOM ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(6,9,15,.9);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;padding:10px 0 max(10px,env(safe-area-inset-bottom));
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--dim);cursor:pointer;padding:4px 12px;border-radius:10px;
+  transition:color .2s;
+}
+.nav-item.active{color:var(--teal)}
+.nav-item span{font-size:18px}
+
+/* ── FOOTER ── */
+.footer{
+  text-align:center;padding:20px 0 8px;
+  font-size:10px;color:var(--dim);letter-spacing:1px;
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">⚡ Arsenal de IA · Navas · 2026</div>
+    <h1>Suas <span>Armas</span><br>de IA</h1>
+    <p class="subtitle">O stack completo para EVCon, ZapMarket, Bolsa &amp; Maturidade e o Cluster EV</p>
+  </header>
+
+  <!-- FILTROS -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="filter('all',this)">Todos</button>
+    <button class="filter-btn" onclick="filter('evcon',this)">EVCon</button>
+    <button class="filter-btn" onclick="filter('zapmarket',this)">ZapMarket</button>
+    <button class="filter-btn" onclick="filter('bm',this)">Bolsa &amp; Mat.</button>
+    <button class="filter-btn" onclick="filter('cluster',this)">Cluster EV</button>
+    <button class="filter-btn" onclick="filter('free',this)">Gratuitas</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- IAs PRINCIPAIS                             -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" data-section="ias">
+    <div class="section-title">🧠 IAs Principais</div>
+
+    <!-- CLAUDE -->
+    <div class="card-hero" data-tags="all evcon zapmarket bm cluster">
+      <div class="hero-top">
+        <div class="hero-icon" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">🟠</div>
+        <div>
+          <div class="hero-name">Claude <span style="color:var(--teal);font-size:13px">Sonnet 4.6</span></div>
+          <div class="hero-sub">Anthropic · Seu QG estratégico</div>
+        </div>
+      </div>
+      <p class="hero-desc">O único que combina raciocínio profundo, criação de arquivos (Excel, PPT, HTML), pesquisa web e memória dos seus projetos. Funciona como co-founder de IA.</p>
+      <div class="hero-uses">
+        <div class="use-item">
+          <div class="use-dot" style="background:var(--teal)"></div>
+          <div class="use-text"><strong>EVCon:</strong> Pitch deck, modelo financeiro, análise de mercado, logo, Notion</div>
+        </div>
+        <div class="use-item">
+          <div class="use-dot" style="background:var(--electric)"></div>
+          <div class="use-text"><strong>ZapMarket:</strong> Arquitetura do sistema, análise regulatória, estratégia</div>
+        </div>
+        <div class="use-item">
+          <div class="use-dot" style="background:var(--amber)"></div>
+          <div class="use-text"><strong>B&amp;M:</strong> Scripts, análise de mercado financeiro, dados do cluster EV</div>
+        </div>
+        <div class="use-item">
+          <div class="use-dot" style="background:var(--mint)"></div>
+          <div class="use-text"><strong>Cluster EV:</strong> Planilhas, IET Score, banco de dados territorial, projeções</div>
+        </div>
+      </div>
+      <a href="https://claude.ai" class="detail-link" style="margin-top:14px">🔗 Abrir Claude →</a>
+    </div>
+
+    <!-- CHATGPT -->
+    <div class="card" data-tags="all bm evcon" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#10a37f22,#10a37f11)">
+          🤖<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">ChatGPT</div>
+          <div class="card-tagline">OpenAI · GPT-4o / GPT-5.5 · O mais popular</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(16,163,127,.15);color:#10a37f">Texto</span>
+            <span class="tag" style="background:rgba(16,163,127,.15);color:#10a37f">Imagens</span>
+            <span class="tag" style="background:rgba(16,163,127,.15);color:#10a37f">Voz</span>
+            <span class="tag" style="background:rgba(245,166,35,.15);color:var(--amber)">US$20/mês</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">✍️</span><span class="detail-text"><strong>Melhor para:</strong> criação de textos criativos, variações de copy, scripts alternativos para B&M. Geração de imagens com DALL-E integrado.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>Seu uso:</strong> Rascunhos de e-mails comerciais EVCon, variações de taglines, geração de imagens de marca.</span></div>
+        <div class="detail-row"><span class="detail-icon">⚠️</span><span class="detail-text">Tende a alucinar em dados financeiros. Sempre verificar com Perplexity.</span></div>
+        <a href="https://chatgpt.com" class="detail-link">🔗 Abrir ChatGPT →</a>
+      </div>
+    </div>
+
+    <!-- GEMINI -->
+    <div class="card" data-tags="all bm evcon cluster free" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#4285f422,#4285f411)">
+          💎<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Gemini</div>
+          <div class="card-tagline">Google · Você já tem assinatura</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(66,133,244,.15);color:#4285f4">Drive</span>
+            <span class="tag" style="background:rgba(66,133,244,.15);color:#4285f4">Sheets</span>
+            <span class="tag" style="background:rgba(66,133,244,.15);color:#4285f4">Docs</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Gratuito+</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">📁</span><span class="detail-text"><strong>Killer feature:</strong> integra nativamente com seus arquivos do Google Drive. Analisa planilhas, Docs e Slides direto no chat.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>Seu uso:</strong> Analisar as planilhas do Cluster EV e EVCon diretamente no Drive. Criar conteúdo para B&M usando documentos que você já tem no Docs.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎬</span><span class="detail-text">Melhor IA de 2026 para análise multimodal — vídeo, áudio e texto simultaneamente.</span></div>
+        <a href="https://gemini.google.com" class="detail-link">🔗 Abrir Gemini →</a>
+      </div>
+    </div>
+
+    <!-- PERPLEXITY -->
+    <div class="card" data-tags="all bm cluster evcon" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#20b2aa22,#20b2aa11)">
+          🔍<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Perplexity</div>
+          <div class="card-tagline">O Google inteligente · Pesquisa com fontes</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(32,178,170,.15);color:#20b2aa">Tempo real</span>
+            <span class="tag" style="background:rgba(32,178,170,.15);color:#20b2aa">Fontes</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🏆</span><span class="detail-text"><strong>Melhor do mercado para:</strong> pesquisa com fontes citadas em tempo real. Nunca inventa — sempre mostra de onde vem cada dado.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>Seu uso:</strong> Pesquisar dados de condomínios, eletropostos, EVs para o B&M e Cluster. Verificar informações antes de publicar um Short.</span></div>
+        <div class="detail-row"><span class="detail-icon">💡</span><span class="detail-text">Fluxo ideal: Perplexity pesquisa → Claude analisa → ChatGPT redige.</span></div>
+        <a href="https://perplexity.ai" class="detail-link">🔗 Abrir Perplexity →</a>
+      </div>
+    </div>
+
+    <!-- GROK -->
+    <div class="card" data-tags="all bm" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#ffffff15,#ffffff08)">
+          ✖️<div class="status-dot dot-amber"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Grok</div>
+          <div class="card-tagline">xAI / Elon Musk · Monitor do X em tempo real</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(255,255,255,.1);color:#ccc">X/Twitter</span>
+            <span class="tag" style="background:rgba(255,255,255,.1);color:#ccc">Notícias</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">⚡</span><span class="detail-text"><strong>Único diferencial:</strong> acesso em tempo real ao X/Twitter. Vê o que está sendo dito agora sobre qualquer tema.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>Seu uso B&M:</strong> monitorar sentiment do mercado financeiro, geopolítica Oriente Médio, narrativas que vão virar Short. Tendências antes da mídia tradicional.</span></div>
+        <div class="detail-row"><span class="detail-icon">⚠️</span><span class="detail-text">Sem filtros. Ótimo para jornalismo, requer curadoria antes de publicar.</span></div>
+        <a href="https://grok.com" class="detail-link">🔗 Abrir Grok →</a>
+      </div>
+    </div>
+
+    <!-- NOTEBOOK LM -->
+    <div class="card" data-tags="all bm cluster free" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#f9ab0022,#f9ab0011)">
+          🎙️<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">NotebookLM</div>
+          <div class="card-tagline">Google · Transforma docs em podcast de áudio</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(249,171,0,.15);color:#f9ab00">Podcast IA</span>
+            <span class="tag" style="background:rgba(249,171,0,.15);color:#f9ab00">Análise PDF</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Gratuito</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🏆</span><span class="detail-text"><strong>Pouco falado, muito poderoso:</strong> jogue seus PDFs e relatórios e ele gera um podcast de 10–20min com dois apresentadores discutindo o conteúdo.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>Seu uso:</strong> Carregar os relatórios do Cluster EV e ouvir no carro. Estudar a planilha de condomínios em formato de conversa. Gerar resumos dos pitches em áudio.</span></div>
+        <a href="https://notebooklm.google.com" class="detail-link">🔗 Abrir NotebookLM →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- FERRAMENTAS DE VÍDEO (B&M)                 -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" data-section="video">
+    <div class="section-title">🎬 Vídeo & Conteúdo (Bolsa &amp; Maturidade)</div>
+
+    <div class="card" data-tags="all bm" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#ff6b6b22,#ff6b6b11)">
+          🎭<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">HeyGen</div>
+          <div class="card-tagline">Avatar de IA que fala por você</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(255,107,107,.15);color:var(--coral)">Avatar IA</span>
+            <span class="tag" style="background:rgba(255,107,107,.15);color:var(--coral)">Vertical</span>
+            <span class="tag" style="background:rgba(245,166,35,.15);color:var(--amber)">Pago</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🔥</span><span class="detail-text"><strong>Game changer B&M:</strong> grave seu avatar uma vez, depois ele produz Shorts sozinho a partir do script. Você escreve, a IA fala e gesticula.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text">Automatiza 80% da produção dos Shorts. Claude escreve o script → HeyGen grava → Captions.ai legenda.</span></div>
+        <a href="https://heygen.com" class="detail-link">🔗 Abrir HeyGen →</a>
+      </div>
+    </div>
+
+    <div class="card" data-tags="all bm free" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#a78bfa22,#a78bfa11)">
+          📱<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Captions.ai</div>
+          <div class="card-tagline">Legendas automáticas + edição por IA</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(167,139,250,.15);color:var(--purple)">Legendas</span>
+            <span class="tag" style="background:rgba(167,139,250,.15);color:var(--purple)">Realme OK</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">📲</span><span class="detail-text"><strong>Funciona no celular:</strong> gera legendas animadas automáticas nos seus Shorts. Remove "éhs" e pausas automaticamente. Formato vertical nativo.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text">Ideal para o seu fluxo no Realme. Grava → Captions edita → publica. Sem computador.</span></div>
+        <a href="https://captions.ai" class="detail-link">🔗 Abrir Captions.ai →</a>
+      </div>
+    </div>
+
+    <div class="card" data-tags="all bm" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#00b4ff22,#00b4ff11)">
+          🎙️<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">ElevenLabs</div>
+          <div class="card-tagline">Clona sua voz · Narra seus scripts</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(0,180,255,.15);color:var(--electric)">Voz IA</span>
+            <span class="tag" style="background:rgba(0,180,255,.15);color:var(--electric)">Clone</span>
+            <span class="tag" style="background:rgba(245,166,35,.15);color:var(--amber)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🎤</span><span class="detail-text"><strong>Você grava 5 minutos de voz uma vez</strong> e o ElevenLabs clona. A partir daí, qualquer texto que você escrever é narrado na sua voz.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text">Claude escreve o script do Short → ElevenLabs narra na sua voz → HeyGen anima o avatar. Pipeline completo.</span></div>
+        <a href="https://elevenlabs.io" class="detail-link">🔗 Abrir ElevenLabs →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- AUTOMAÇÃO & DADOS                          -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section" data-section="auto">
+    <div class="section-title">⚙️ Automação & Dados</div>
+
+    <div class="card" data-tags="all zapmarket evcon cluster" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#ff6d0022,#ff6d0011)">
+          🔄<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">n8n</div>
+          <div class="card-tagline">Orquestrador sem código · Coração do ZapMarket</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(255,109,0,.15);color:#ff6d00">Open Source</span>
+            <span class="tag" style="background:rgba(255,109,0,.15);color:#ff6d00">WhatsApp</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Gratuito</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🏗️</span><span class="detail-text"><strong>Já está no seu stack:</strong> ZapMarket roda em n8n + Evolution API + Postgres. É a espinha dorsal da automação.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>EVCon:</strong> automatizar follow-up com síndicos. <strong>Cluster:</strong> pipeline de coleta de dados de eletropostos. <strong>B&M:</strong> automação de publicação.</span></div>
+        <a href="https://n8n.io" class="detail-link">🔗 Abrir n8n →</a>
+      </div>
+    </div>
+
+    <div class="card" data-tags="all evcon cluster" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#00c5a822,#00c5a811)">
+          🤝<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Clay</div>
+          <div class="card-tagline">CRM com IA · Prospecção de síndicos EVCon</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(0,197,168,.15);color:var(--teal)">Leads</span>
+            <span class="tag" style="background:rgba(0,197,168,.15);color:var(--teal)">Enriquecimento</span>
+            <span class="tag" style="background:rgba(245,166,35,.15);color:var(--amber)">Pago</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>Para a EVCon:</strong> enriquece listas de condomínios com nome do síndico, e-mail, LinkedIn, tamanho do prédio. Automatiza o primeiro contato.</span></div>
+        <div class="detail-row"><span class="detail-icon">💡</span><span class="detail-text">Você importa a lista da planilha de condomínios → Clay busca os dados dos síndicos automaticamente → n8n envia o contato.</span></div>
+        <a href="https://clay.com" class="detail-link">🔗 Abrir Clay →</a>
+      </div>
+    </div>
+
+    <div class="card" data-tags="all cluster evcon free" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#f5a62322,#f5a62311)">
+          🕷️<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Apify</div>
+          <div class="card-tagline">Web scraping sem código · Dados do Cluster</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(245,166,35,.15);color:var(--amber)">Scraping</span>
+            <span class="tag" style="background:rgba(245,166,35,.15);color:var(--amber)">Automático</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">📊</span><span class="detail-text"><strong>Para o banco de dados do Cluster:</strong> coleta automaticamente dados do PlugShare (eletropostos), DETRAN, portais imobiliários. Sem código.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text">Configura uma vez → roda todo mês → alimenta sua planilha de condomínios e EVs automaticamente.</span></div>
+        <a href="https://apify.com" class="detail-link">🔗 Abrir Apify →</a>
+      </div>
+    </div>
+
+    <div class="card" data-tags="all evcon zapmarket" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#a78bfa22,#a78bfa11)">
+          🤖<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Relevance AI</div>
+          <div class="card-tagline">Cria agentes sem código · O mais acessível</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(167,139,250,.15);color:var(--purple)">Agentes IA</span>
+            <span class="tag" style="background:rgba(167,139,250,.15);color:var(--purple)">No-code</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">🔥</span><span class="detail-text"><strong>Pouco falado, muito poderoso:</strong> cria agentes de IA que executam tarefas repetitivas automaticamente. Mais fácil que Crew AI para quem não programa.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>EVCon:</strong> agente de onboarding de síndicos. <strong>ZapMarket:</strong> agente de atendimento de usuários no WhatsApp.</span></div>
+        <a href="https://relevanceai.com" class="detail-link">🔗 Abrir Relevance AI →</a>
+      </div>
+    </div>
+
+    <div class="card" data-tags="all bm cluster" onclick="toggle(this)">
+      <div class="card-top">
+        <div class="card-icon" style="background:linear-gradient(135deg,#00e67622,#00e67611)">
+          📊<div class="status-dot dot-green"></div>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Napkin.ai</div>
+          <div class="card-tagline">Texto → Infográfico em segundos</div>
+          <div class="card-tags">
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Visual</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Infográfico</span>
+            <span class="tag" style="background:rgba(0,230,118,.15);color:var(--mint)">Freemium</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-divider"></div>
+        <div class="detail-row"><span class="detail-icon">✨</span><span class="detail-text"><strong>Pouco falado:</strong> você cola qualquer texto e ele gera automaticamente infográficos, diagramas e visualizações prontos para apresentações.</span></div>
+        <div class="detail-row"><span class="detail-icon">🎯</span><span class="detail-text"><strong>B&M:</strong> transformar dados do cluster em infográficos para Shorts. <strong>EVCon:</strong> visualizações rápidas para o pitch.</span></div>
+        <a href="https://napkin.ai" class="detail-link">🔗 Abrir Napkin.ai →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- STACK POR PROJETO                          -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🗺️ Stack por Projeto</div>
+
+    <div class="stack-row">
+      <div class="stack-item">
+        <div class="stack-project" style="color:var(--teal)">⚡ EVCon</div>
+        <div class="stack-tools">
+          <span style="background:rgba(0,197,168,.15);color:var(--teal)">Claude</span>
+          <span style="background:rgba(0,197,168,.15);color:var(--teal)">Clay</span>
+          <span style="background:rgba(0,197,168,.15);color:var(--teal)">n8n</span>
+          <span style="background:rgba(0,197,168,.15);color:var(--teal)">Relevance</span>
+          <span style="background:rgba(0,197,168,.15);color:var(--teal)">Napkin</span>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-project" style="color:var(--amber)">📱 ZapMarket</div>
+        <div class="stack-tools">
+          <span style="background:rgba(245,166,35,.15);color:var(--amber)">Claude</span>
+          <span style="background:rgba(245,166,35,.15);color:var(--amber)">n8n</span>
+          <span style="background:rgba(245,166,35,.15);color:var(--amber)">Evolution</span>
+          <span style="background:rgba(245,166,35,.15);color:var(--amber)">Relevance</span>
+        </div>
+      </div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-item">
+        <div class="stack-project" style="color:var(--coral)">📺 Bolsa &amp; Mat.</div>
+        <div class="stack-tools">
+          <span style="background:rgba(255,107,107,.15);color:var(--coral)">Claude</span>
+          <span style="background:rgba(255,107,107,.15);color:var(--coral)">Perplexity</span>
+          <span style="background:rgba(255,107,107,.15);color:var(--coral)">Grok</span>
+          <span style="background:rgba(255,107,107,.15);color:var(--coral)">HeyGen</span>
+          <span style="background:rgba(255,107,107,.15);color:var(--coral)">Captions</span>
+          <span style="background:rgba(255,107,107,.15);color:var(--coral)">ElevenLabs</span>
+        </div>
+      </div>
+      <div class="stack-item">
+        <div class="stack-project" style="color:var(--electric)">🗺️ Cluster EV</div>
+        <div class="stack-tools">
+          <span style="background:rgba(0,180,255,.15);color:var(--electric)">Claude</span>
+          <span style="background:rgba(0,180,255,.15);color:var(--electric)">Apify</span>
+          <span style="background:rgba(0,180,255,.15);color:var(--electric)">Gemini</span>
+          <span style="background:rgba(0,180,255,.15);color:var(--electric)">NotebookLM</span>
+          <span style="background:rgba(0,180,255,.15);color:var(--electric)">n8n</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVISO DEEPSEEK -->
+  <div class="section">
+    <div class="section-title">⚠️ Evitar</div>
+    <div class="warning-card">
+      <span style="font-size:20px;flex-shrink:0">🚫</span>
+      <p><strong>DeepSeek — não usar</strong> para seus projetos. Jurisdição chinesa, risco documentado de vazamento de dados em 2025. Para dados sensíveis dos seus projetos (EVCon, ZapMarket, estratégias), use Claude ou Gemini que têm política de não usar suas conversas para treinar modelos.</p>
+    </div>
+  </div>
+
+  <!-- FLUXO IDEAL -->
+  <div class="section">
+    <div class="section-title">💡 Fluxo Ideal de Trabalho</div>
+    <div class="highlight-box">
+      <span class="hi">🔍</span>
+      <p><strong>Pesquisar:</strong> Perplexity ou Grok (tempo real)</p>
+    </div>
+    <div class="highlight-box">
+      <span class="hi">🧠</span>
+      <p><strong>Analisar e criar:</strong> Claude (estratégia, arquivos, código)</p>
+    </div>
+    <div class="highlight-box">
+      <span class="hi">✍️</span>
+      <p><strong>Redigir variações:</strong> ChatGPT (textos criativos, copy)</p>
+    </div>
+    <div class="highlight-box">
+      <span class="hi">📁</span>
+      <p><strong>Integrar com Drive/Docs:</strong> Gemini (você já tem assinatura)</p>
+    </div>
+    <div class="highlight-box">
+      <span class="hi">🎬</span>
+      <p><strong>Produzir vídeo B&M:</strong> HeyGen + Captions.ai + ElevenLabs</p>
+    </div>
+    <div class="highlight-box">
+      <span class="hi">⚙️</span>
+      <p><strong>Automatizar tudo:</strong> n8n + Relevance AI + Apify</p>
+    </div>
+  </div>
+
+  <div class="footer">Arsenal de IA · Navas · 07/05/2026<br>Atualizado com dados de mai/2026</div>
+
+</div>
+
+<!-- NAV BOTTOM -->
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="scrollTo(0,0)"><span>🧠</span>IAs</div>
+  <div class="nav-item" onclick="scrollToSection('video')"><span>🎬</span>Vídeo</div>
+  <div class="nav-item" onclick="scrollToSection('auto')"><span>⚙️</span>Auto</div>
+  <div class="nav-item" onclick="scrollToSection('stack')"><span>🗺️</span>Stack</div>
+</nav>
+
+<script>
+function toggle(card){
+  const detail=card.querySelector('.card-detail');
+  const isOpen=detail.classList.contains('open');
+  document.querySelectorAll('.card-detail.open').forEach(d=>{
+    if(d!==detail) d.classList.remove('open');
+  });
+  detail.classList.toggle('open',!isOpen);
+  if(!isOpen) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function filter(tag, btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[data-tags]').forEach(el=>{
+    if(tag==='all'){
+      el.style.display='';
+    } else {
+      const tags=el.getAttribute('data-tags').split(' ');
+      el.style.display=tags.includes(tag)?'':'none';
+    }
+  });
+}
+
+function scrollToSection(name){
+  const map={video:'video',auto:'auto',stack:'stack'};
+  const sections=document.querySelectorAll('.section-title');
+  sections.forEach(s=>{
+    if((name==='video'&&s.textContent.includes('Vídeo'))||
+       (name==='auto'&&s.textContent.includes('Automação'))||
+       (name==='stack'&&s.textContent.includes('Stack'))){
+      s.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  });
+}
+
+// Animar entrada dos cards
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:.1});
+
+document.querySelectorAll('.card,.card-hero,.stack-item,.highlight-box,.warning-card').forEach(el=>{
+  el.style.opacity='0';
+  el.style.transform='translateY(16px)';
+  el.style.transition='opacity .4s ease, transform .4s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
